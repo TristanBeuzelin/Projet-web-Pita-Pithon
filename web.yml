@@ -1,0 +1,12 @@
+name: rogue-web
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python == 3.8.5
+  - Flask==1.1.2 
+  - gevent 
+  - gevent-websocket 
+  - Flask-SocketIO==4.3.1 
+  - python-engineio==3.13.2 
+  - python-socketio==4.6.0

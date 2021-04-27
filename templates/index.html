@@ -1,0 +1,308 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href={{ url_for("static", filename="css/main.css") }}>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js" ></script>
+        <!-- <script type="text/javascript" src={{ url_for("static", filename="js/main.js") }}></script> -->
+    </head>
+    <body onload="startMap()" id="body">
+        <div> <b> Rogue Flask <br /> {{ username }}</b></div>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Golds = </td>
+                    <td id = "golds">{{ golds }}</td> 
+                </tr>
+                <tr>
+                    <td>HP = </td>
+                    <td id = "hp">{{ HP }}</td> 
+                </tr>
+                <tr>
+                    <td>Level {{ level }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div id= "flexbox" class="flexbox">
+            <div class="thekeypad">
+                <div class="key"></div>
+                <div class="key"><input id="go_n" class="keypad_btn" type="button" value="&#9650"> </div>
+                <div class="key"></div>
+                <div class="key"><input id="go_w" class="keypad_btn" type="button" value="&#9664"></div>
+                <div class="key"></div>
+                <div class="key"><input id="go_e" class="keypad_btn" type="button" value="&#9654"></div>
+                <div class="key"></div>
+                <div class="key"><input id="go_s" class="keypad_btn" type="button" value="&#9660"></div>
+                <div class="key"></div>
+            </div>
+            
+        </div>
+        <script>
+            var res = 16;
+            
+            var mapdata = JSON.parse('{{ mapdata | tojson }}');
+    
+            var n_row = '{{ n_row | tojson}}';
+
+            var map_height = parseInt(n_row);
+
+            var n_col = '{{ n_col | tojson }}';
+
+            var map_width = parseInt(n_col);
+            
+
+            function startMap(){ /* Draw the inital map configuration */
+                myGameArea.start();
+                for(var i = 0; i < map_height; i++){
+                    for(var j = 0; j < map_width; j++){
+                        var element = mapdata[i][j]
+                        
+                        component(symToimg.get(element),j*res,i*res)
+                        
+                    }
+                }
+            }
+
+            var myGameArea = { /* Initializing canvas */
+                canvas : document.createElement("canvas"),
+                start : function() {
+                    this.canvas.width = res*map_width;
+                    this.canvas.height = res*map_height;
+                    this.context = this.canvas.getContext("2d");
+                    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                }
+            }
+            
+
+            var floor = new Image();
+            floor.src = '../static/pictures/floor_1.png'
+
+            var wall = new Image();
+            wall.src = '../static/pictures/wall_1.png'
+
+            var potion = new Image();
+            potion.src = '../static/pictures/potion_1.png'
+
+            var trap = new Image();
+            trap.src = '../static/pictures/trap_1.png'
+
+            var gold = new Image();
+            gold.src = '../static/pictures/gold_1.png'
+
+            var door = new Image();
+            door.src = '../static/pictures/door.png'
+
+            var player_north = new Image();
+            player_north.src = '../static/pictures/player_north_1.png'
+
+            var player_south = new Image();
+            player_south.src = '../static/pictures/player_south_1.png'
+
+            var player_east = new Image();
+            player_east.src = '../static/pictures/player_east_1.png'
+
+            var player_west = new Image();
+            player_west.src = '../static/pictures/player_west_1.png'
+
+            var monster_north = new Image();
+            monster_north.src = '../static/pictures/monster_north.png'
+
+            var monster_south = new Image();
+            monster_south.src = '../static/pictures/monster_south.png'
+
+            var monster_west = new Image();
+            monster_west.src = '../static/pictures/monster_west.png'
+
+            var monster_east = new Image();
+            monster_east.src = '../static/pictures/monster_east.png'
+
+
+
+            var symToimg = new Map();
+            symToimg.set(".",floor);
+            symToimg.set("#",wall);
+            symToimg.set("S",wall);
+            symToimg.set("@",player_south);
+            symToimg.set("D",door);
+            symToimg.set("T",gold);
+            symToimg.set("U",trap);
+            symToimg.set("P",potion);
+            symToimg.set("X",monster_north);
+
+            function component(element, x, y) { /* Draw an image with x and y the coordinates of the NW point */
+                ctx = myGameArea.context;
+                
+                ctx.drawImage(element,x, y);
+            }
+
+            var socket = io.connect("http://" + document.domain + ":" + location.port );
+            
+            function move_monster(){
+                socket.emit("monster_move");
+            }
+
+            move_monster();
+
+            window.addEventListener("DOMContentLoaded", (event) => {
+
+                socket.on("monster_response", function(data){
+                    data = JSON.parse(data)
+                    for (var i = 0; i < data[0]; i++){
+                        var prev_pos_x = data[1][i][0].j;
+                        var prev_pos_y = data[1][i][0].i;
+                        var new_pos_x = data[1][i][1].j;
+                        var new_pos_y = data[1][i][1].i;
+                        var dx = data[1][i][2][1];
+                        var dy = data[1][i][2][2];
+                        component(symToimg.get(data[1][i][0].content),prev_pos_x*res,prev_pos_y*res)
+                        if ( dx == 1){
+                            component(monster_east,new_pos_x*res,new_pos_y*res)
+                        }
+                        else{
+                            if (dx == -1){
+                                component(monster_west,new_pos_x*res,new_pos_y*res)
+                            }
+                            else {
+                                if ( dy == 1){
+                                    component(monster_south,new_pos_x*res,new_pos_y*res)
+                                }
+                                else {
+                                    component(monster_north,new_pos_x*res,new_pos_y*res)
+                                }
+                            }
+                        }
+                    }
+                    setTimeout(move_monster,200)
+                })
+
+
+                document.onkeydown = function(e){
+                    switch(e.keyCode){
+                        case 37:
+                            socket.emit("move", {dx:-1, dy:0});
+                            break;
+                        case 38:
+                            socket.emit("move", {dx:0, dy:-1});
+                            break;
+                        case 39:
+                            socket.emit("move", {dx:1, dy:0});
+                            break;
+                        case 40:
+                            socket.emit("move", {dx:0, dy:1});
+                            break;
+                        /*Ajout*/
+                        case 32:
+                            /* Essayer de coder l'attaque ici */
+                            function attack(){
+                                var player_position = document.getElementById()
+                            }
+                            socket.emit("player_attack") 
+                        /******/
+                    }
+
+
+                };
+            
+                var btn_n = document.getElementById("go_n");
+                btn_n.onclick = function(e) {
+                    console.log("Clicked on button north");
+                    socket.emit("move", {dx:0, dy:-1});
+                };
+
+                var btn_s = document.getElementById("go_s");
+                btn_s.onclick = function(e) {
+                    console.log("Clicked on button south");
+                    socket.emit("move", {dx:0, dy:1});
+                };
+
+                var btn_w = document.getElementById("go_w");
+                btn_w.onclick = function(e) {
+                    console.log("Clicked on button w");
+                    socket.emit("move", {dx:-1, dy:0});
+                };
+
+                var btn_e = document.getElementById("go_e");
+                btn_e.onclick = function(e) {
+                    console.log("Clicked on button e");
+                    socket.emit("move", {dx:1, dy:0});
+                };
+
+                var btn_retry = document.getElementById("retry");
+                btn_retry.onclick = function(e) {
+                    console.log("Clicked on retry button");
+                    socket.emit("reset", {'next_level':false});
+                }
+
+                socket.on("monster_die",function(data){
+                    component(symToimg.get(data[2]),res*data[1],res*data[0]);
+                })
+
+                socket.on("player_die",function(data){
+                    component(symToimg.get(data[2]),res*data[1],res*data[0]);
+                })
+
+                socket.on("response", function(data){
+                    console.log(data);
+                    var prev_pos_x = data[0].j;
+                    var prev_pos_y = data[0].i;
+                    var new_pos_x = data[1].j;
+                    var new_pos_y = data[1].i;
+                    var dy = data[7][0];
+                    var dx = data[7][1];
+              
+                    component(floor,prev_pos_x*res,prev_pos_y*res);
+                    if ( dx == 1){
+                        
+                            component(player_south,new_pos_x*res,new_pos_y*res)
+                        }
+                    else{
+                        if (dx == -1){
+                            component(player_north,new_pos_x*res,new_pos_y*res)
+                        }
+                        else {
+                            if ( dy == 1){
+                                component(player_east,new_pos_x*res,new_pos_y*res)
+                            }
+                            else {
+                                component(player_west,new_pos_x*res,new_pos_y*res)
+                            }
+                        }
+                    }
+                    
+                    /*Ajout*/
+                    var golds_td = document.getElementById("golds");
+                    golds_td.textContent = data[2];
+                    var HP_td = document.getElementById("hp");
+                    HP_td.textContent = data[3];
+                    if( data[3] == 0 )
+                    {
+                        var body = document.getElementsByTagName("canvas");
+                        for(i=0;i < body.length;i++){
+                            body[i].style.display = 'none';
+                        } 
+                        var game_over = document.getElementById("game_over");
+                        game_over.style.display = 'block';
+                    }
+                    if( data[2] == 20 && document.location.href == 'http://127.0.0.1:5001/single')
+                    {
+                        socket.emit("door")
+                    }
+                    if( data[6].includes(true) )
+                    {
+                        socket.emit("reset", {'next_level':true});
+                    }
+                })
+
+                socket.on("reset_response", function(){
+                    document.location.reload()
+                })
+                socket.on("door_response", function(data){
+                    document.location.reload()
+                })
+            })
+        </script>
+        <div id="game_over">
+            <p>Game Over</p>
+            <button id="retry" type="button">Retry</button> 
+        </div>
+    </body>
+</html>

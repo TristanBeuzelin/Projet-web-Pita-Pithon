@@ -1,0 +1,25 @@
+body{
+    background-color: slategray;
+}
+
+.flexbox{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.thekeypad{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 35px;
+    grid-gap: 5px;
+    max-width:120px;
+}
+
+.keypad_btn{
+    background-color: black;
+    opacity: 0.75;
+    color: cyan;
+}
+
+#game_over{display: none;font-size: 80px;color: red;text-align: center;flex-direction: column;}

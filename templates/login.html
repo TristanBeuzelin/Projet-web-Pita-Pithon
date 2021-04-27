@@ -1,0 +1,12 @@
+<h1>Sign In</h1>
+    <form action="" method="post" novalidate name="username">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}
+	    {% for error in form.username.errors %}
+            [{{ error }}]
+        {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
