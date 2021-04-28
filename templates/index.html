@@ -6,37 +6,49 @@
         <!-- <script type="text/javascript" src={{ url_for("static", filename="js/main.js") }}></script> -->
     </head>
     <body onload="startMap()" id="body">
-        <div> <b> Rogue Flask <br /> {{ username }}</b></div>
-        <table>
-            <tbody>
-                <tr>
-                    <td>Golds = </td>
-                    <td id = "golds">{{ golds }}</td> 
-                </tr>
-                <tr>
-                    <td>HP = </td>
-                    <td id = "hp">{{ HP }}</td> 
-                </tr>
-                <tr>
-                    <td>Level {{ level }}</td>
-                </tr>
-            </tbody>
-        </table>
-        <div id= "flexbox" class="flexbox">
-            <div class="thekeypad">
-                <div class="key"></div>
-                <div class="key"><input id="go_n" class="keypad_btn" type="button" value="&#9650"> </div>
-                <div class="key"></div>
-                <div class="key"><input id="go_w" class="keypad_btn" type="button" value="&#9664"></div>
-                <div class="key"></div>
-                <div class="key"><input id="go_e" class="keypad_btn" type="button" value="&#9654"></div>
-                <div class="key"></div>
-                <div class="key"><input id="go_s" class="keypad_btn" type="button" value="&#9660"></div>
-                <div class="key"></div>
+        <h1>Rogue Flask</h1>
+        <div class="score">
+            <b>{{ username }}</b>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>Golds = </td>
+                        <td id = "golds">{{ golds }}</td> 
+                    </tr>
+                    <tr>
+                        <td>HP = </td>
+                        <td id = "hp">{{ HP }}</td> 
+                    </tr>
+                    <tr>
+                        <td>Level {{ level }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id= "flexbox" class="flexbox">
+                <div class="thekeypad">
+                    <div class="key"></div>
+                    <div class="key"><input id="go_n" class="keypad_btn" type="button" value="&#9650"> </div>
+                    <div class="key"></div>
+                    <div class="key"><input id="go_w" class="keypad_btn" type="button" value="&#9664"></div>
+                    <div class="key"></div>
+                    <div class="key"><input id="go_e" class="keypad_btn" type="button" value="&#9654"></div>
+                    <div class="key"></div>
+                    <div class="key"><input id="go_s" class="keypad_btn" type="button" value="&#9660"></div>
+                    <div class="key"></div>
+                </div>
             </div>
-            
+        </div>
+        <div id="save_retry">
+            <button id="retry1" type="button">Retry</button>
+            <button id="quit" type="button">Save and Quit</button>
         </div>
         <script>
+
+            if(document.location.href == 'http://127.0.0.1:5001/multi'){
+                var buttons = document.getElementById('save_retry');
+                buttons.style.display = "none"
+            }
+
             var res = 16;
             
             var mapdata = JSON.parse('{{ mapdata | tojson }}');
@@ -139,6 +151,9 @@
             function move_monster(){
                 socket.emit("monster_move");
             }
+            function attack_monster(){
+                socket.emit("monster_attack");
+            }
 
             move_monster();
 
@@ -171,7 +186,8 @@
                             }
                         }
                     }
-                    setTimeout(move_monster,200)
+                    setTimeout(move_monster,200);
+                    setTimeout(attack_monster, 200);
                 })
 
 
@@ -226,10 +242,22 @@
                     socket.emit("move", {dx:1, dy:0});
                 };
 
-                var btn_retry = document.getElementById("retry");
+                var btn_retry = document.getElementById("retry1");
                 btn_retry.onclick = function(e) {
                     console.log("Clicked on retry button");
                     socket.emit("reset", {'next_level':false});
+                }
+
+                var btn_retry = document.getElementById("retry2");
+                btn_retry.onclick = function(e) {
+                    console.log("Clicked on retry button");
+                    socket.emit("reset", {'next_level':false});
+                }
+
+                var btn_quit = document.getElementById("quit");
+                btn_quit.onclick = function(e) {
+                    console.log("Clicked on Save and Quite button")
+                    socket.emit("quit")
                 }
 
                 socket.on("monster_die",function(data){
@@ -238,6 +266,30 @@
 
                 socket.on("player_die",function(data){
                     component(symToimg.get(data[2]),res*data[1],res*data[0]);
+                })
+
+                socket.on('actualize', function(data){
+                    var golds_td = document.getElementById("golds");
+                    golds_td.textContent = data[0];
+                    var HP_td = document.getElementById("hp");
+                    HP_td.textContent = data[1];
+                    if( data[1] == 0 )
+                    {
+                        var body = document.getElementsByTagName("canvas");
+                        for(i=0;i < body.length;i++){
+                            body[i].style.display = 'none';
+                        } 
+                        var game_over = document.getElementById("game_over");
+                        game_over.style.display = 'block';
+                    }
+                    if( data[0] == 20 && document.location.href == 'http://127.0.0.1:5001/single')
+                    {
+                        socket.emit("door")
+                    }
+                    if( data[2].includes(true) )
+                    {
+                        socket.emit("reset", {'next_level':true});
+                    }
                 })
 
                 socket.on("response", function(data){
@@ -298,11 +350,14 @@
                 socket.on("door_response", function(data){
                     document.location.reload()
                 })
+                socket.on("quit_response", function(){
+                    document.location.href = "http://127.0.0.1:5001/"
+                })
             })
         </script>
         <div id="game_over">
             <p>Game Over</p>
-            <button id="retry" type="button">Retry</button> 
+            <button id="retry2" type="button">Retry</button> 
         </div>
     </body>
 </html>

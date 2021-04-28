@@ -3,16 +3,23 @@ from flask_socketio import SocketIO
 from game_backend import Game
 from form import LoginForm
 from time import time
-import json 
+import json
+import pickle
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "123"
 socketio = SocketIO(app)
-game = Game()
+global game
+try:
+    with open('save', 'rb') as data:
+        game = pickle.load(data)
+except:
+    game = Game()
 global move_time
 move_time = time()
-print(move_time)
+global attack_time
+attack_time = time()
 
 @app.route("/")
 def accueil():
@@ -28,9 +35,16 @@ def choice(json):
 
 @app.route("/single")
 def index():
+    global game
+    if game.mode == "Multi":
+        try:
+            with open('save', 'rb') as data:
+                game = pickle.load(data)
+        except:
+            game = Game()
     maping = game.getMap()
-    session['username'] = 'Joe'
-    return render_template("index.html", mapdata= maping, n_row=len(maping), n_col=len(maping[0]), golds=[player.golds for player in game.players], HP=[player.health_points for player in game.players], level=game.level, username=str(session['username']))
+    session['username'] = 'Tristan'
+    return render_template("index.html", mapdata= maping, n_row=len(maping), n_col=len(maping[0]), golds=" ".join(str(player.golds) for player in game.players), HP=" ".join(str(player.health_points) for player in game.players), level=game.level, username=str(session['username']))
 
 @app.route("/multilog", methods=['GET', 'POST'])
 def login():
@@ -42,12 +56,15 @@ def login():
 
 @app.route("/multi")
 def multi():
-    maping = game.getMap()
-    if len(game.players) == 1 and game.players[0].name == 'Joe':
+    global game
+    if game.mode == 'Single':
+        game = Game()
         game.rename_player(session['username'])
+        game.mode = 'Multi'
     else:
         game.add_player(session['username'])
-    return render_template("index.html", mapdata= maping, n_row=len(maping), n_col=len(maping[0]), golds=[player.golds for player in game.players], HP=[player.health_points for player in game.players], level=game.level, username=[player.name for player in game.players])
+    maping = game.getMap()
+    return render_template("index.html", mapdata= maping, n_row=len(maping), n_col=len(maping[0]), golds=" ".join(str(player.golds) for player in game.players), HP=" ".join(str(player.health_points) for player in game.players), level=game.level, username=[player.name for player in game.players])
 
 @socketio.on("move")
 def on_move_msg(json, methods=["GET", "POST"]):
@@ -81,17 +98,37 @@ def reset(json):
     game.reset(json)
     socketio.emit("reset_response")
 
+@socketio.on("quit")
+def quit():
+    with open('save', 'wb') as data:
+        pickle.dump(game, data)
+    socketio.emit("quit_response")
+    return
+
 
 @socketio.on("monster_move")
 def monster_move():
     global move_time
-    print(time()-move_time)
     if time()-move_time > 0.2:
         move_time = time()
         data_list = game.update_Monster()
         N = len(data_list)
         socketio.emit("monster_response", json.dumps([N,data_list]))
 
+@socketio.on("monster_attack")
+def monster_attack():
+    global attack_time
+    if time()-attack_time > 1.5:
+        attack_time = time()
+        for monster in game._Monster:
+            for player in game.players:
+                if monster.is_near_player(player):
+                    player.health_points -= 10
+                    data = []
+                    data.append([player.golds for player in game.players])
+                    data.append([player.health_points for player in game.players])
+                    data.append([player.complete for player in game.players])
+                    socketio.emit('actualize', data)
 
 @socketio.on("player_attack")
 def player_attack():
@@ -115,5 +152,4 @@ def player_attack():
 
 if __name__=="__main__":
     socketio.run(app, port=5001, debug=True)
-
 

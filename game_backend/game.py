@@ -19,8 +19,8 @@ class Game:
         self.width = self._generator.width
         # Tentative de multi #
         self.players = [Player()]
-        for player in self.players:
-            player.initPos( self._map )
+        self.players[0].initPos( self._map )
+        self.mode = "Single"
         ##
 
         self._Monster = self._generator.gen_monster(self)
