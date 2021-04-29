@@ -1,20 +1,26 @@
-<header>
-    <script>
-        function single() {
-            document.location.href = "http://127.0.0.1:5001/single";
-        };
-        function multi() {
-            document.location.href = "http://127.0.0.1:5001/multilog";
-        };
-    </script>
-</header>
-<body>
-    <button class="choice"
-            type="button" onclick="single()">
-        Single Player
-    </button>
-    <button class="choice"
-            type="button" onclick="multi()">
-        Multi Player
-    </button>
-</body>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href={{ url_for("static", filename="css/choice.css") }}>
+        <script>
+            function single() {
+                document.location.href = "http://127.0.0.1:5001/single";
+            };
+            function multi() {
+                document.location.href = "http://127.0.0.1:5001/multilog";
+            };
+        </script>
+    </head>
+    <body>
+        <img src="../static/pictures/police.png" />
+        <div class="buttons">
+            <button class="choice"
+                    type="button" onclick="single()">
+                SinglePlayer
+            </button>
+            <button class="choice"
+                    type="button" onclick="multi()">
+                MultiPlayer
+            </button>
+        </div>
+    </body>
+</html>

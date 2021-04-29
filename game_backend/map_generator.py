@@ -35,12 +35,11 @@ class Generator():
         self.room_list = []
         self.corridor_list = []
         self.tiles_level = []
-        ### Ajouts ###
+        # Positions des trésors et potions
         self.treasure_x = None
         self.treasure_y = None
         self.potion_x = None
         self.potion_y = None
-        ###
     
     def gen_room(self):
         x, y, w, h = 0, 0, 0, 0
@@ -259,6 +258,9 @@ class Generator():
 
 
     def gen_door(self):
+        """
+        Génération de la porte sur un mur choisi au hasard.
+        """
         found = False
         while found is False:
             y_init = random.randint(0,len(self.level)-1)  
@@ -269,19 +271,13 @@ class Generator():
         return x_init, y_init
 
     def gen_treasure(self):
+        """
+        Génération de 10 trésors au hasard sur le sol.
+        """
         for n in range (10):
             found = False
             while found is False:
                 y_init = random.randint(0,len(self.level)-1)
-                
-                '''
-                for i,c in enumerate(self.tiles_level[y_init][::-1]):
-                    if c == ".":
-                        x_init = len(self.tiles_level[y_init]) - i
-                        found = True
-                        break
-                '''
-                
                 x_init = random.randint(0, len(self.tiles_level[y_init])-1)
 
                 if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init,x_init,"S")):
@@ -292,6 +288,9 @@ class Generator():
             self.tiles_level[self.treasure_y][self.treasure_x-1] = 'T'
 
     def gen_potion(self):
+        """
+        Génération de 5 potions au hasard sur le sol.
+        """
         for n in range (5):
             found = False
             while found is False:
@@ -307,6 +306,9 @@ class Generator():
 
 
     def gen_trap(self):
+        """
+        Génération de 10 pièges au hasard sur le sol.
+        """
         for n in range (10):
             found = False
             while found is False:
@@ -319,6 +321,10 @@ class Generator():
             self.tiles_level[y_init][x_init-1] = 'U'
 
     def gen_monster(self,game):
+        """
+        Génération des monstres au hasard sur le sol.
+        Leur nombre augmente avec le niveau de la partie.
+        """
         monsters = [Monster(game.level) for i in range(4+game.level)]
         for monster in monsters:
             monster.initPos(game._map, game.height, game.width, game.players)

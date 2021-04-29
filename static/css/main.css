@@ -1,21 +1,9 @@
-@font-face {
-    font-family: 'rogue';
-    src: url(../fonts/rogueherolaserital.ttf);
-}
-
 body{
     background-color: slategray;
 }
 
-h1{
-    font-family: 'rogue';
-    font-size: 75px;
-    text-align: center;
-    color:darkred;
-}
-
 .score{
-    margin-top: -150px;
+    margin-top: 0px;
     margin-left: 50px;
 }
 

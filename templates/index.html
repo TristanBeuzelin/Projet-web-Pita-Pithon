@@ -6,9 +6,10 @@
         <!-- <script type="text/javascript" src={{ url_for("static", filename="js/main.js") }}></script> -->
     </head>
     <body onload="startMap()" id="body">
-        <h1>Rogue Flask</h1>
         <div class="score">
-            <b>{{ username }}</b>
+            <div id="usernames">
+                <b>{{ username }}</b>
+            </div>
             <table>
                 <tbody>
                     <tr>
@@ -44,6 +45,7 @@
         </div>
         <script>
 
+            /* Si on est en mode multi, on retire les options retry et save and quit */
             if(document.location.href == 'http://127.0.0.1:5001/multi'){
                 var buttons = document.getElementById('save_retry');
                 buttons.style.display = "none"
@@ -148,6 +150,7 @@
 
             var socket = io.connect("http://" + document.domain + ":" + location.port );
             
+            /* Fonctions de lancement des requêtes d'attaque et des mouvement des monstres */
             function move_monster(){
                 socket.emit("monster_move");
             }
@@ -155,10 +158,18 @@
                 socket.emit("monster_attack");
             }
 
-            move_monster();
+            /* On lance ici une première requête move_monster afin d'initialiser le mouvement des monstres
+            Le setTimeout s'avère être indispensable. En effet, lors de l'actualisation de la page (passage dans une porte, appartition d'une porte,
+            changement de mode de jeu...), il arrive que le temps d'actualisation de la page soit plus faible
+            que l'intervalle de temps minimum de mouvement imposé dans app.py. La requête est alors ignorée et
+            les monstres s'immobilisent.*/
+            setTimeout(move_monster, 200);
 
             window.addEventListener("DOMContentLoaded", (event) => {
 
+                /* Deuxième partie de la boucle qui fait bouger et attaquer les monstres en continu.
+                On récupère le socket.emit venant de app.py, on traite les données reçues (carte, stats...)
+                puis on renvoie les requêtes move_monster et attack_monster à app.py */
                 socket.on("monster_response", function(data){
                     data = JSON.parse(data)
                     for (var i = 0; i < data[0]; i++){
@@ -190,7 +201,7 @@
                     setTimeout(attack_monster, 200);
                 })
 
-
+                /* Détection des demandes de mouvement ou d'attaque par le joueur via les touches du clavier */
                 document.onkeydown = function(e){
                     switch(e.keyCode){
                         case 37:
@@ -205,14 +216,11 @@
                         case 40:
                             socket.emit("move", {dx:0, dy:1});
                             break;
-                        /*Ajout*/
                         case 32:
-                            /* Essayer de coder l'attaque ici */
                             function attack(){
                                 var player_position = document.getElementById()
                             }
-                            socket.emit("player_attack") 
-                        /******/
+                            socket.emit("player_attack")
                     }
 
 
@@ -242,6 +250,8 @@
                     socket.emit("move", {dx:1, dy:0});
                 };
 
+                /* Detection des demandes de réinitialisation de la partie, ou du Save and Quit du solo.
+                Ces demandes sont alors transmises à app.py */
                 var btn_retry = document.getElementById("retry1");
                 btn_retry.onclick = function(e) {
                     console.log("Clicked on retry button");
@@ -260,6 +270,7 @@
                     socket.emit("quit")
                 }
 
+                /* Mise à jour des visuels lorsqu'un joueur/monstre meurt */
                 socket.on("monster_die",function(data){
                     component(symToimg.get(data[2]),res*data[1],res*data[0]);
                 })
@@ -268,11 +279,14 @@
                     component(symToimg.get(data[2]),res*data[1],res*data[0]);
                 })
 
+                /* Fonction d'actualisation des visuels lors d'une requête 'actualize' */
                 socket.on('actualize', function(data){
                     var golds_td = document.getElementById("golds");
                     golds_td.textContent = data[0];
                     var HP_td = document.getElementById("hp");
                     HP_td.textContent = data[1];
+                    var usernames = document.getElementById('usernames');
+                    usernames.textContent = data[3];
                     if( data[1] == 0 )
                     {
                         var body = document.getElementsByTagName("canvas");
@@ -286,12 +300,14 @@
                     {
                         socket.emit("door")
                     }
+                    /* Passage au niveau suivant */
                     if( data[2].includes(true) )
                     {
                         socket.emit("reset", {'next_level':true});
                     }
                 })
 
+                /* Actualisation des visuels après mouvement du joueur */
                 socket.on("response", function(data){
                     console.log(data);
                     var prev_pos_x = data[0].j;
@@ -320,7 +336,6 @@
                         }
                     }
                     
-                    /*Ajout*/
                     var golds_td = document.getElementById("golds");
                     golds_td.textContent = data[2];
                     var HP_td = document.getElementById("hp");
@@ -344,12 +359,15 @@
                     }
                 })
 
+                /* Actualisation de la page quand la partie est réinitialisée */
                 socket.on("reset_response", function(){
                     document.location.reload()
                 })
+                /* Actualisation du visuel quand la porte apparait */
                 socket.on("door_response", function(data){
-                    document.location.reload()
+                    component(door,data[0]*res,data[1]*res)
                 })
+                /* Retour à l'accueil lors d'un Save and Quit */
                 socket.on("quit_response", function(){
                     document.location.href = "http://127.0.0.1:5001/"
                 })

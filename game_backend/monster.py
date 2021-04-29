@@ -135,7 +135,6 @@ class Monster:
             self._dx = dx
             self._dy = dy
             
-        ### Ajout #####
         elif map[new_y][new_x] == "T":
           
             self.previous_step_on = self.step_on
@@ -147,7 +146,7 @@ class Monster:
             self._y = new_y
             self._dx = dx
             self._dy = dy
-        ################
+            
         elif map[new_y][new_x] == "P":
             
             self.previous_step_on = self.step_on

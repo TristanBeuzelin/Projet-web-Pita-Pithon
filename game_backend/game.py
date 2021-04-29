@@ -7,29 +7,35 @@ class Game:
         self._generator = Generator(width=width, height=height)
         self._generator.gen_level()
         self._generator.gen_tiles_level()
-        ### Ajout ###
+        # Génération des golds, potions, pièges
         self._generator.gen_treasure()
         self._generator.gen_potion()
         self._generator.gen_trap()
+        # Attribut désignant si la porte est révélée ou pas
         self.door_revealed = False
+        # Niveau de la partie
         self.level = 1
-        ###
         self._map = self._generator.tiles_level
         self.height = self._generator.height
         self.width = self._generator.width
-        # Tentative de multi #
+        # Création du premier joueur, on est par défaut en mode Solo.
         self.players = [Player()]
         self.players[0].initPos( self._map )
         self.mode = "Single"
-        ##
-
+        # Génération des monstres
         self._Monster = self._generator.gen_monster(self)
 
                 
     def rename_player(self, name):
+        """
+        Permet de renommer le joueur lorsqu'on pass au mode multi.
+        """
         self.players[0].name = name
 
     def add_player(self, name):
+        """
+        Permet d'ajouter des joueurs qui se connectent au mode multi.
+        """
         flag = False
         for player in self.players:
             if player.name == name:
@@ -40,6 +46,9 @@ class Game:
             self.players.append(player)
     
     def update_Monster(self):
+        """
+        Fonction de mise à jour de la position des monstres
+        """
         data_list = []
         for monster in self._Monster:
             data = monster.move(self._map, self.players)
@@ -50,6 +59,9 @@ class Game:
         return self._map
 
     def move(self, dx, dy, name):
+        """
+        Déplace le joueur qui l'a demandé
+        """
         for obj in self.players:
             if obj.name == name:
                 player = obj
@@ -57,6 +69,9 @@ class Game:
 
 
     def reset(self,json):
+        """
+        Réinitialisation de la partie, ou passage au niveau suivant.
+        """
         next_level = json['next_level']
         if not next_level:
             for player in self.players:
