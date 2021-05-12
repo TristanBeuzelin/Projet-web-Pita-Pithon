@@ -85,7 +85,7 @@ class Player:
             data = [{"i": f"{self._y}", "j":f"{self._x}", "content":self._symbol}, {"i": f"{self._y}", "j":f"{self._x}", "content":self._symbol}]
         return data
 
-    def die(self,map):
+    def die(self, map):
         """
         Disparition du joueur mort.
         """

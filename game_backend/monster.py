@@ -3,12 +3,12 @@ from .player import Player
 
 
 
-def dist(pos1,pos2): #Return the absolute distance 
+def dist(pos1, pos2): #Return the absolute distance 
     return abs(pos2[1] - pos1[1]) + abs(pos2[0] - pos1[0])
 
-def neighborhood(map,i,j,l_close): #Return available neighbor position
-    l = [(i,j+1),(i,j-1),(i+1,j),(i-1,j)]
-    return [point for point in l if map[point[1]][point[0]] not in ['#','S'] and point not in l_close.keys()]
+def neighborhood(map, i, j, l_close): #Return available neighbor position
+    l = [(i, j + 1), (i, j - 1), (i + 1, j), (i - 1, j)]
+    return [point for point in l if map[point[1]][point[0]] not in ['#', 'S'] and point not in l_close.keys()]
 
 def search_min(l_open): #Return the point with the best quality
     nodes = list(l_open.keys())
@@ -19,24 +19,24 @@ def search_min(l_open): #Return the point with the best quality
     return best_node
     
 
-def move_to_player(map,node,l_open,l_close,start,end): #Search a path between start and end using A* algorithm
+def move_to_player(map, node, l_open, l_close, start, end): #Search a path between start and end using A* algorithm
     if node != end and l_open != {}:
-        neighbors = neighborhood(map,node[0],node[1],l_close)
+        neighbors = neighborhood(map, node[0], node[1], l_close)
         for new_node in neighbors:
-            newG = dist(new_node,start)
-            newH = dist(new_node,end)
+            newG = dist(new_node, start)
+            newH = dist(new_node, end)
             newF = newG + newH
             nodes_open = list(l_open.keys())
             if new_node in nodes_open:
                 info = l_open[new_node]
                 if newH < info[2]:
-                    l_open[new_node] = [node,newG,newH,newF]
+                    l_open[new_node] = [node, newG, newH, newF]
             else:
-                l_open[new_node] = [node,newG,newH,newF]
+                l_open[new_node] = [node, newG, newH, newF]
         best_node = search_min(l_open)
         l_close[best_node] = l_open[best_node]
         l_open.pop(best_node)
-        return move_to_player(map,best_node,l_open,l_close,start,end)
+        return move_to_player(map, best_node, l_open, l_close, start, end)
     else:
         if node == end:
             node = end
@@ -44,7 +44,7 @@ def move_to_player(map,node,l_open,l_close,start,end): #Search a path between st
             while node != start:
                 node = l_close[node][0]
                 path.append(node)
-            return True,path
+            return True, path
         else:
             return False           
 
@@ -72,7 +72,7 @@ class Monster:
         for player in players:
             found = False
             while found is False:
-                y_init = random.randint(0,height-1)  
+                y_init = random.randint(0, height-1)  
                 x_init = random.randint(0, width-1)
                 if _map[y_init][x_init] == "." and (abs(y_init - player._y) + abs(x_init - player._x) > 7):
                     found = True
@@ -96,23 +96,23 @@ class Monster:
         dx, dy = 0, 0
         close_players = [player for player in players if self.distance(player) < 7]
         if close_players == []:
-            dx,dy = random.choice([[0,0],[0,1],[0,0],[0,-1],[0,0],[1,0],[0,0],[-1,0],[0,0]])
+            dx,dy = random.choice([[0, 0], [0, 1], [0, 0], [0, -1], [0, 0], [1, 0], [0, 0], [-1, 0], [0, 0]])
         else:
             paths = []
             for player in close_players:
-                start = (self._x,self._y)
-                end = (player._x,player._y)
+                start = (self._x, self._y)
+                end = (player._x, player._y)
                 startG = 0
-                startH = dist(start,end)
-                l_open = {start : [start,startG,startH,startH]}
+                startH = dist(start, end)
+                l_open = {start : [start, startG, startH, startH]}
                 l_close = {}
-                b,path = move_to_player(map,start,l_open,l_close,start,end)
+                b,path = move_to_player(map, start, l_open, l_close, start, end)
                 if b:
                     paths.append(path)
             if paths != []:
                 L = [len(pathh) for pathh in paths]
                 path = paths[L.index(min(L))]
-                dx,dy = path[-2][0] - path[-1][0],path[-2][1] - path[-1][1]
+                dx,dy = path[-2][0] - path[-1][0], path[-2][1] - path[-1][1]
             else:
                 dx,dy = random.choice([[0, 0], [0, 1], [0, 0], [0, -1], [0, 0], [1, 0], [0, 0], [-1, 0], [0, 0]])
         return dx,dy

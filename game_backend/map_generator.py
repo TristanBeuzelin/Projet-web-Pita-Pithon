@@ -254,7 +254,7 @@ class Generator():
         #[print(row) for row in self.tiles_level]
 
     def is_near(self,i,j,element):
-        return self.tiles_level[i+1][j] == element or self.tiles_level[i-1][j] == element or self.tiles_level[i][j+1] == element or self.tiles_level[i][j-1] == element 
+        return self.tiles_level[i + 1][j] == element or self.tiles_level[i - 1][j] == element or self.tiles_level[i][j + 1] == element or self.tiles_level[i][j - 1] == element 
 
 
     def gen_door(self):
@@ -263,9 +263,9 @@ class Generator():
         """
         found = False
         while found is False:
-            y_init = random.randint(0,len(self.level)-1)  
-            x_init = random.randint(0, len(self.tiles_level[y_init])-1)
-            if self.tiles_level[y_init][x_init] == "#" and self.is_near(y_init,x_init,"."):
+            y_init = random.randint(0, len(self.level) - 1)  
+            x_init = random.randint(0, len(self.tiles_level[y_init]) - 1)
+            if self.tiles_level[y_init][x_init] == "#" and self.is_near(y_init, x_init, "."):
                 found = True
                 break
         return x_init, y_init
@@ -274,13 +274,13 @@ class Generator():
         """
         Génération de 10 trésors au hasard sur le sol.
         """
-        for n in range (10):
+        for n in range(10):
             found = False
             while found is False:
-                y_init = random.randint(0,len(self.level)-1)
-                x_init = random.randint(0, len(self.tiles_level[y_init])-1)
+                y_init = random.randint(0, len(self.level) - 1)
+                x_init = random.randint(0, len(self.tiles_level[y_init]) - 1)
 
-                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init,x_init,"S")):
+                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init, x_init, "S")):
                     found = True
                     break
             self.treasure_x = x_init
@@ -294,10 +294,10 @@ class Generator():
         for n in range (5):
             found = False
             while found is False:
-                y_init = random.randint(0,len(self.level)-1)  
-                x_init = random.randint(0, len(self.tiles_level[y_init])-1)
+                y_init = random.randint(0, len(self.level) - 1)  
+                x_init = random.randint(0, len(self.tiles_level[y_init]) - 1)
 
-                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init,x_init,"S")):
+                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init, x_init, "S")):
                     found = True
                     break
             self.potion_x = x_init
@@ -312,10 +312,10 @@ class Generator():
         for n in range (10):
             found = False
             while found is False:
-                y_init = random.randint(0,len(self.level)-1)  
-                x_init = random.randint(0, len(self.tiles_level[y_init])-1)
+                y_init = random.randint(0, len(self.level) - 1)  
+                x_init = random.randint(0, len(self.tiles_level[y_init]) - 1)
 
-                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init,x_init,"S")):
+                if self.tiles_level[y_init][x_init] == "." and not(self.is_near(y_init, x_init, "S")):
                     found = True
                     break
             self.tiles_level[y_init][x_init-1] = 'U'
@@ -325,7 +325,7 @@ class Generator():
         Génération des monstres au hasard sur le sol.
         Leur nombre augmente avec le niveau de la partie.
         """
-        monsters = [Monster(game.level) for i in range(4+game.level)]
+        monsters = [Monster(game.level) for i in range(4 + game.level)]
         for monster in monsters:
             monster.initPos(game._map, game.height, game.width, game.players)
         return monsters

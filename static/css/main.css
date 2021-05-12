@@ -27,4 +27,10 @@ body{
     color: cyan;
 }
 
-#game_over{display: none;font-size: 80px;color: red;text-align: center;flex-direction: column;}
+#game_over{
+    display: none;
+    font-size: 80px;
+    color: red;
+    text-align: center;
+    flex-direction: column;
+}
