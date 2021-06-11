@@ -284,7 +284,6 @@ def move_fireballs():
     if time() - firemove_time > 0.01:
         firemove_time = time()
         data = game.update_fireballs()
-        print('bite')
         socketio.emit("fireball_response", json.dumps(data))
         data = data_actualize_construct(game)
         socketio.emit('actualize', data)
