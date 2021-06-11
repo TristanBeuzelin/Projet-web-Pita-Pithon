@@ -24,6 +24,7 @@ class Game:
         self.mode = "Single"
         # Génération des monstres
         self._Monster = self._generator.gen_monster(self)
+        self.fireballs = []
 
                 
     def rename_player(self, name):
@@ -54,6 +55,68 @@ class Game:
             data = monster.move(self._map, self.players)
             data_list.append(data)
         return data_list
+
+    def update_fireballs(self):
+        data = []
+        for i, fireball in enumerate(self.fireballs):
+            dx = fireball[2][0]
+            dy = fireball[2][1]
+            new_x = fireball[0] + dx
+            new_y = fireball[1] + dy
+            x = fireball[0]
+            y = fireball[1]
+            
+            if self._map[new_y][new_x] == ".":
+            
+                self._map[new_y][new_x] = "F"
+                self._map[y][x] = "."
+                data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"F"}, [dx, dy]])
+                fireball[0] = new_x
+                fireball[1] = new_y
+
+            elif self._map[new_y][new_x] == "T":
+            
+                self._map[new_y][new_x] = "F"
+                self._map[y][x] = "."
+                data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"F"}, [dx, dy]])
+                fireball[0] = new_x
+                fireball[1] = new_y
+
+            elif self._map[new_y][new_x] == "P":
+            
+                self._map[new_y][new_x] = "F"
+                self._map[y][x] = "."
+                data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"F"}, [dx, dy]])
+                fireball[0] = new_x
+                fireball[1] = new_y
+
+            elif self._map[new_y][new_x] == "U":
+                
+                self._map[new_y][new_x] = "F"
+                self._map[y][x] = "."
+                data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"F"}, [dx, dy]])
+                fireball[0] = new_x
+                fireball[1] = new_y
+
+            elif self._map[new_y][new_x] == "#":
+                self.fireballs.pop(i)
+                self._map[new_y][new_x] = "#"
+                self._map[y][x] = "."
+                data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"#"}, [0, 0]])
+
+            for monster in self._Monster:
+                if (new_x, new_y) == (monster._x, monster._y):
+                    monster.die(self._map)
+                    self._Monster.remove(monster)
+
+            for player in self.players:
+                if (new_x, new_y) == (player._x, player._y):
+                    player.die(self._map)
+                    self.players.remove(player)
+
+
+
+        return data
 
     def getMap(self):
         return self._map

@@ -23,6 +23,12 @@
                     <tr>
                         <td>Level {{ level }}</td>
                     </tr>
+                    <tr>
+                        <td> SPACE = Close range attack</td>
+                    </tr>
+                    <tr>
+                        <td> F = Fireball</td>
+                    </tr>
                 </tbody>
             </table>
             <div id= "flexbox" class="flexbox">
@@ -129,6 +135,22 @@
             var monster_east = new Image();
             monster_east.src = '../static/pictures/monster_east.png'
 
+            var fireball_north = new Image();
+            fireball_north.src = '../static/pictures/fireball_north.png'
+
+            var fireball_south = new Image();
+            fireball_south.src = '../static/pictures/fireball_south.png'
+
+            var fireball_east = new Image();
+            fireball_east.src = '../static/pictures/fireball_east.png'
+
+            var fireball_west = new Image();
+            fireball_west.src = '../static/pictures/fireball_west.png'
+
+            var DX = 0
+
+            var DY = 1
+
 
 
             var symToimg = new Map();
@@ -141,6 +163,7 @@
             symToimg.set("U",trap);
             symToimg.set("P",potion);
             symToimg.set("X",monster_north);
+            symToimg.set("F",fireball_north);
 
             function component(element, x, y) { /* Draw an image with x and y the coordinates of the NW point */
                 ctx = myGameArea.context;
@@ -157,6 +180,9 @@
             function attack_monster(){
                 socket.emit("monster_attack");
             }
+            function move_fireballs(){
+                socket.emit("move_fireballs");
+            }
 
             /* On lance ici une première requête move_monster afin d'initialiser le mouvement des monstres
             Le setTimeout s'avère être indispensable. En effet, lors de l'actualisation de la page (passage dans une porte, appartition d'une porte,
@@ -164,6 +190,7 @@
             que l'intervalle de temps minimum de mouvement imposé dans app.py. La requête est alors ignorée et
             les monstres s'immobilisent.*/
             setTimeout(move_monster, 200);
+            setTimeout(move_fireballs, 100);
 
             window.addEventListener("DOMContentLoaded", (event) => {
 
@@ -201,31 +228,78 @@
                     setTimeout(attack_monster, 200);
                 })
 
+
                 /* Détection des demandes de mouvement ou d'attaque par le joueur via les touches du clavier */
                 document.onkeydown = function(e){
                     switch(e.keyCode){
                         case 37:
                             socket.emit("move", {dx:-1, dy:0});
+                            DX = -1;
+                            DY = 0;
                             break;
                         case 38:
                             socket.emit("move", {dx:0, dy:-1});
+                            DX = 0;
+                            DY = -1;
                             break;
                         case 39:
                             socket.emit("move", {dx:1, dy:0});
+                            DX = 1;
+                            DY = 0;
                             break;
                         case 40:
                             socket.emit("move", {dx:0, dy:1});
+                            DX = 0;
+                            DY = 1;
                             break;
                         case 32:
-                            function attack(){
-                                var player_position = document.getElementById()
-                            }
-                            socket.emit("player_attack")
+                            socket.emit("player_attack");
+                            break;
+                        case 70:
+                            socket.emit("create_fireball", {dx: DX, dy: DY});
+                            break;
                     }
 
 
                 };
-            
+
+                socket.on("fireball_response", function(data){
+                    data = JSON.parse(data)
+                    console.log(data)
+                    if (data.length != 0){
+                        for (var i = 0; i < data.length; i++){
+                            var prev_pos_x = data[i][0].j;
+                            var prev_pos_y = data[i][0].i;
+                            var new_pos_x = data[i][1].j;
+                            var new_pos_y = data[i][1].i;
+                            var dx = data[i][2][0];
+                            var dy = data[i][2][1];
+                            component(symToimg.get(data[i][0].content),prev_pos_x*res,prev_pos_y*res)
+                            if ( dx == 1){
+                                component(fireball_east,new_pos_x*res,new_pos_y*res)
+                            }
+                            else{
+                                if (dx == -1){
+                                    component(fireball_west,new_pos_x*res,new_pos_y*res)
+                                }
+                                else {
+                                    if ( dy == 1){
+                                        component(fireball_south,new_pos_x*res,new_pos_y*res)
+                                    }
+                                    else {
+                                        if (dy == -1){
+                                            component(fireball_north,new_pos_x*res,new_pos_y*res)
+                                        }
+                                        else{
+                                            component(wall,new_pos_x*res,new_pos_y*res)
+                                        }
+                                    }
+                                }
+                            }
+                        }}
+                    setTimeout(move_fireballs,20);
+                })
+
                 var btn_n = document.getElementById("go_n");
                 btn_n.onclick = function(e) {
                     console.log("Clicked on button north");

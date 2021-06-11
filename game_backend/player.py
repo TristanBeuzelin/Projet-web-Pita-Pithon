@@ -12,6 +12,7 @@ class Player:
         self._dy = None
         self.complete = False
         self.strength = 50
+
     def initPos(self, _map):
         n_row = len(_map)
 

@@ -32,7 +32,8 @@ global move_time
 move_time = time()
 global attack_time
 attack_time = time()
-
+global firemove_time
+firemove_time = time()
 
 # Fonction qui construit la liste à passer ensuite
 # en JSON pour acutaliser les stats des joueurs.
@@ -266,9 +267,27 @@ def player_attack():
                 other_player.die(game._map)
                 game.players.remove(other_player)
                 socketio.emit("player_die", [other_player._y, other_player._x, '.'])
-            data = data_actualize_construct(game)
-            socketio.emit('actualize', data)
 
+@socketio.on("create_fireball")
+def create_fireball(json):
+    for obj in game.players:
+        if obj.name == session['username']:
+            player = obj
+    dx = json['dx']
+    dy = json['dy']
+    direction = (dx, dy)
+    game.fireballs.append([player._x + dx, player._y + dy, direction])
+
+@socketio.on("move_fireballs")
+def move_fireballs():
+    global firemove_time
+    if time() - firemove_time > 0.01:
+        firemove_time = time()
+        data = game.update_fireballs()
+        print('bite')
+        socketio.emit("fireball_response", json.dumps(data))
+        data = data_actualize_construct(game)
+        socketio.emit('actualize', data)
 
 if __name__ == "__main__":
     socketio.run(app, port=5001, debug=True)
