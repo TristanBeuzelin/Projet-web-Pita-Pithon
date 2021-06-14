@@ -1,0 +1,2 @@
+Le principe du jeu est de passer à travers les différentes salles du donjon. Il faut accumuler assez de pièces d'or pour débloquer la porte secrète. Attention aux pièges et aux monstres. Vous avez à votre disposition deux armes: une épée pour le corps à corps, et des boules de feu pour attaquer à distance (elles ne feront pas de dégâts au corps à corps). Attention ! Les boules de feu détruisent tout sur leur passage, même les pièces !
+Le multijoueur en ligne est fonctionnel. Il faut lancer le jeu sur une fenêtre normale et sur une fenêtre en navigation privée.
