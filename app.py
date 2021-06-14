@@ -46,6 +46,7 @@ def data_actualize_construct(game):
     data.append([player.health_points for player in game.players])
     data.append([player.complete for player in game.players])
     data.append([player.name for player in game.players])
+
     return data
 
 
@@ -79,7 +80,7 @@ def index():
         except:
             game = Game()
     maping = game.getMap()
-    session['username'] = 'Tristan'
+    session['username'] = 'Joueur_par_defaut'
     return render_template("index.html", mapdata=maping, n_row=len(maping),
     n_col=len(maping[0]), golds=str(game.players[0].golds),
     HP=str(game.players[0].health_points), level=game.level)
@@ -232,7 +233,7 @@ def monster_attack():
         for monster in game._Monster:
             for player in game.players:
                 if monster.is_near_player(player):
-                    player.health_points -= 10
+                    player.hurt(game,10)
                     data = data_actualize_construct(game)
                     socketio.emit('actualize', data)
 
@@ -253,10 +254,8 @@ def player_attack():
             player = obj
     for i, monster in enumerate(game._Monster):
         if [player._x + player._dx, player._y + player._dy] == [monster._x, monster._y]:
-            monster.health_points -= player.strength
-            if monster.health_points <= 0:
-                monster.die(game._map)
-                game._Monster.remove(monster)
+            monster.hurt(game,player.strength)
+            if monster.dead():
                 socketio.emit("monster_die", [monster._y, monster._x, monster.step_on])
             data = data_actualize_construct(game)
             socketio.emit('actualize', data)
@@ -270,6 +269,11 @@ def player_attack():
 
 @socketio.on("create_fireball")
 def create_fireball(json):
+    """
+    Requête de création d'une boule de feu lorsqu'un joueur appuie sur F.
+    On vérifie quel joueur a lancé l'attaque et on fait partir le boule de feu de sa position.
+    La direction de la boule de feu est définie selon l'orientation du joueur lors du lancement.
+    """
     for obj in game.players:
         if obj.name == session['username']:
             player = obj
@@ -280,6 +284,12 @@ def create_fireball(json):
 
 @socketio.on("move_fireballs")
 def move_fireballs():
+    """
+    Requête de mouvement de toutes les boules de feu présentes sur la carte.
+    De la même manière que pour les monstres, on fait face à une multiplication
+    des requêtes socket en mode multijoueur. Une limitation en temps est donc
+    imposée.
+    """
     global firemove_time
     if time() - firemove_time > 0.01:
         firemove_time = time()

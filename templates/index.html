@@ -264,6 +264,12 @@
                 };
 
                 socket.on("fireball_response", function(data){
+                    /* 
+                    Deuxième partie de la boucle qui fait bouger les boules de feu en continu.
+                    On récupère le socket.emit venant de app.py, on traite les données reçues (carte, stats...)
+                    puis on renvoie la requête move_fireballs à app.py. Le Timeout sert à régler la vitesse
+                    de déplacement des boules de feu.
+                    */
                     data = JSON.parse(data)
                     console.log(data)
                     if (data.length != 0){
@@ -291,13 +297,18 @@
                                             component(fireball_north,new_pos_x*res,new_pos_y*res)
                                         }
                                         else{
-                                            component(wall,new_pos_x*res,new_pos_y*res)
+                                            if (dx == 2){
+                                                component(floor,new_pos_x*res,new_pos_y*res)
+                                            }
+                                            else{
+                                                component(wall,new_pos_x*res,new_pos_y*res)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }}
-                    setTimeout(move_fireballs,20);
+                    setTimeout(move_fireballs,30);
                 })
 
                 var btn_n = document.getElementById("go_n");
@@ -327,12 +338,6 @@
                 /* Detection des demandes de réinitialisation de la partie, ou du Save and Quit du solo.
                 Ces demandes sont alors transmises à app.py */
                 var btn_retry = document.getElementById("retry1");
-                btn_retry.onclick = function(e) {
-                    console.log("Clicked on retry button");
-                    socket.emit("reset", {'next_level':false});
-                }
-
-                var btn_retry = document.getElementById("retry2");
                 btn_retry.onclick = function(e) {
                     console.log("Clicked on retry button");
                     socket.emit("reset", {'next_level':false});
@@ -448,8 +453,7 @@
             })
         </script>
         <div id="game_over">
-            <p>Game Over</p>
-            <button id="retry2" type="button">Retry</button> 
+            <img src="../static/pictures/gameover.png" /> 
         </div>
     </body>
 </html>

@@ -1,7 +1,7 @@
 
 
 class Player:
-    def __init__(self, name="Tristan", symbol="@"):
+    def __init__(self, name="Joueur_par_defaut", symbol="@"):
         self.name = name
         self._symbol = symbol
         self.health_points = 100
@@ -14,6 +14,7 @@ class Player:
         self.strength = 50
 
     def initPos(self, _map):
+        '''Initialize the position of the monster randomly using the rejection method'''
         n_row = len(_map)
 
         y_init = n_row//2
@@ -32,6 +33,7 @@ class Player:
         _map[self._y][self._x] = self._symbol
 
     def move(self, dx, dy, map):
+        '''Move the player on the grid depending what's facing it, what it steps on and what direction it is supposed to go'''
         new_x = self._x + dx
         new_y = self._y + dy
 
@@ -85,9 +87,18 @@ class Player:
         else:
             data = [{"i": f"{self._y}", "j":f"{self._x}", "content":self._symbol}, {"i": f"{self._y}", "j":f"{self._x}", "content":self._symbol}]
         return data
+    
+    def dead(self):
+        '''Return True if the player is dead'''
+        return self.health_points <= 0
 
-    def die(self, map):
-        """
-        Disparition du joueur mort.
-        """
-        map[self._y][self._x] = '.'
+    def hurt(self,game,damage):
+        '''Apply damage to the player thus reducing its health and eventually kill it if its health points go below zero'''
+        self.health_points -= damage
+        if self.dead():
+            self.die(game)
+
+    def die(self,game):
+        '''Make the player die : remove it from the map and the game session'''
+        game._map[self._y][self._x] = '.'
+        game.players.remove(self)

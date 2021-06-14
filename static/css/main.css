@@ -1,10 +1,22 @@
+@font-face{font-family: 'poppins';src: url(../fonts/Poppins-LightItalic.ttf)}
+
 body{
-    background-color: slategray;
+    background-image: url(../pictures/rogue.jpg);
+    background-size: cover;
 }
 
 .score{
-    margin-top: 0px;
-    margin-left: 50px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+    color: gold;
+    font-family: 'poppins';
+}
+
+table{
+    color: gold;
+    margin-left: 100px;
+    margin-right: 100px;
 }
 
 .flexbox{
@@ -33,4 +45,18 @@ body{
     color: red;
     text-align: center;
     flex-direction: column;
+}
+
+#retry1{
+    background-color: red;
+    border-radius: 15px;
+    font-family: 'poppins';
+    font-size: 15px;
+}
+
+#quit{
+    background-color: green;
+    border-radius: 15px;
+    font-family: 'poppins';
+    font-size: 15px;
 }

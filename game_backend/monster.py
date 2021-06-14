@@ -3,14 +3,18 @@ from .player import Player
 
 
 
-def dist(pos1, pos2): #Return the absolute distance 
+
+def dist(pos1, pos2):
+    '''Return the L1 distance between 2 positions on the grid'''
     return abs(pos2[1] - pos1[1]) + abs(pos2[0] - pos1[0])
 
-def neighborhood(map, i, j, l_close): #Return available neighbor position
+def neighborhood(map, i, j, l_close): 
+    '''Return available neighbor position'''
     l = [(i, j + 1), (i, j - 1), (i + 1, j), (i - 1, j)]
     return [point for point in l if map[point[1]][point[0]] not in ['#', 'S'] and point not in l_close.keys()]
 
-def search_min(l_open): #Return the point with the best quality
+def search_min(l_open): 
+    '''Return the point with the best quality for the A* algorithm'''
     nodes = list(l_open.keys())
     best_node = nodes[0]
     for node in nodes:
@@ -19,7 +23,8 @@ def search_min(l_open): #Return the point with the best quality
     return best_node
     
 
-def move_to_player(map, node, l_open, l_close, start, end): #Search a path between start and end using A* algorithm
+def move_to_player(map, node, l_open, l_close, start, end): 
+    '''Search the shortest path between start and end using A* algorithm'''
     if node != end and l_open != {}:
         neighbors = neighborhood(map, node[0], node[1], l_close)
         for new_node in neighbors:
@@ -66,9 +71,11 @@ class Monster:
         self.previous_step_on = "."
 
     def distance(self, player):
+        '''Return the L1 distance between the monster and the player'''
         return abs(self._y - player._y) + abs(self._x - player._x)
 
     def initPos(self, _map, height, width, players):
+        '''Initialize the position of the monster randomly using the rejection method'''
         for player in players:
             found = False
             while found is False:
@@ -84,15 +91,13 @@ class Monster:
         _map[self._y][self._x] = self._symbol
 
 
-    def attack(self,player):
-        return 0
-
-
-    
     def is_near_player(self,player):
+        '''Check if the monster is capable of attacking the player'''
         return self.distance(player) == 1
 
     def getdxdy(self,map,players):
+        '''Get the direction of the next move of the monster. If all the player are more than 7 blocks away it will move randomly.
+        Else, we use the A* algorithm to get the shortest path between it and the closest player to get the next move''' 
         dx, dy = 0, 0
         close_players = [player for player in players if self.distance(player) < 7]
         if close_players == []:
@@ -118,6 +123,7 @@ class Monster:
         return dx,dy
 
     def move(self, map, players):
+        '''Move the monster on the grid depending what's facing it and what it steps on and what it was previously steping on'''
         dx,dy = self.getdxdy(map, players)
         
         new_x = self._x + dx
@@ -182,7 +188,20 @@ class Monster:
        
         return data
 
+    def dead(self):
+        '''Return True if the monster is dead'''
+        return self.health_points <= 0
 
-    def die(self,map):
-        map[self._y][self._x] = self.step_on
+    def hurt(self,game,damage):
+        '''Apply damage to the monster thus reducing its health and eventually kill it if its health points go below zero'''
+        self.health_points -= damage
+        if self.dead():
+            self.die(game)
+
+    def die(self,game):
+        '''Make the monster die : remove it from the map and the game session'''
+        game._map[self._y][self._x] = self.step_on
+        game._Monster.remove(self)
+
+    
         

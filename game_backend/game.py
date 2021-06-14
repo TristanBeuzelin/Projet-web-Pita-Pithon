@@ -1,3 +1,4 @@
+from os import PathLike
 from .map_generator import Generator
 from .player import Player
 from .monster import Monster
@@ -57,7 +58,14 @@ class Game:
         return data_list
 
     def update_fireballs(self):
+        """
+        Fonction de calcul de la nouvelle position des boules de feu, et de leur interaction
+        avec l'environnement. On veut qu'elles détruisent tout sur leur passage et qu'elles
+        infligent des dégâts aux monstres et autres joueurs.
+        """
         data = []
+        fireball_damage_player = 10
+        fireball_damage_monster = 20
         for i, fireball in enumerate(self.fireballs):
             dx = fireball[2][0]
             dy = fireball[2][1]
@@ -106,16 +114,22 @@ class Game:
 
             for monster in self._Monster:
                 if (new_x, new_y) == (monster._x, monster._y):
-                    monster.die(self._map)
-                    self._Monster.remove(monster)
+                    self.fireballs.pop(i)
+                    self._map[y][x] = "."
+                    data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{y}", "j":f"{x}", "content":"."}, [2, 0]])
+                    monster.hurt(self, fireball_damage_monster)
+                    if monster.dead():
+                            data.append([{"i": f"{new_y}", "j":f"{new_x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"."}, [2, 0]])
 
             for player in self.players:
                 if (new_x, new_y) == (player._x, player._y):
-                    player.die(self._map)
-                    self.players.remove(player)
-
-
-
+                    self.fireballs.pop(i)
+                    self._map[y][x] = "."
+                    data.append([{"i": f"{y}", "j":f"{x}", "content":"."}, {"i": f"{y}", "j":f"{x}", "content":"."}, [2, 0]])
+                    player.hurt(self, fireball_damage_player)
+                    if player.dead():
+                        data.append([{"i": f"{new_y}", "j":f"{new_x}", "content":"."}, {"i": f"{new_y}", "j":f"{new_x}", "content":"."}, [2, 0]])
+                    
         return data
 
     def getMap(self):

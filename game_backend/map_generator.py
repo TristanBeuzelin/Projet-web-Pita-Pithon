@@ -334,8 +334,6 @@ if __name__ == '__main__':
     gen = Generator()
     gen.gen_level()
     gen.gen_tiles_level()
-    ### Ajout ###
     gen.gen_treasure()
     gen.gen_potion()
     gen.gen_trap()
-    #########
